@@ -72,7 +72,14 @@ for y in range(STEPS):
     if RECORDING:
         pygame.image.save(surface, f"recording/forward/{y}.png")
     # handle events
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+    pause = False
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            # press space to pause
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                pause = not pause
+        if not pause:
+            break
