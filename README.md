@@ -8,6 +8,7 @@ Rule 30
     pip install -r requirements.txt
     python -m forward
     python -m backward
+    ffmpeg -framerate 60 -i recording/forward/%d.png -vcodec libx264 forward.mp4
 
 
 ## License
