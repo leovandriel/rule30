@@ -1,4 +1,4 @@
-import pygame
+from pygame_hide import pygame
 import sys
 
 # total number of iterations, i.e. number of frames in animation
@@ -23,7 +23,7 @@ RULES = {
 COLORS = [(255, 255, 255), (0, 0, 0)]
 
 # whether to write each frame to disk
-RECORDING = False
+RECORDING = sys.argv[1] == "record" if len(sys.argv) > 1 else False
 
 # number of cells in the state array
 size = STEPS + SCREEN_SIZE[0] // 2
@@ -41,9 +41,11 @@ current[size // 2] = 1
 offset = [(size - SCREEN_SIZE[0]) // 2, 0]
 
 # set up Pygame for drawing to screen
-pygame.init()
-pygame.display.set_caption("Rule 30")
-surface = pygame.display.set_mode(SCREEN_SIZE)
+if RECORDING:
+    surface = pygame.Surface(SCREEN_SIZE)
+else:
+    pygame.init()
+    surface = pygame.display.set_mode(SCREEN_SIZE)
 surface.fill(COLORS[0])
 
 # progress line by line, starting at the top
@@ -63,17 +65,20 @@ for y in range(STEPS):
         next[x] = RULES[(current[x - 1], current[x], current[(x + 1) % size])]
     # apply next state by flipping buffers
     current, next = next, current
-    # update the screen, indicate progress
-    pygame.display.update()
-    pygame.display.set_caption(f"Rule 30 [{100 * y / STEPS:.0f}%]")
-    # write the frame to disk if recording
     if RECORDING:
-        pygame.image.save(surface, f"recording/forward/{y}.png")
+        # write the frame to stdout
+        sys.stdout.buffer.write(surface.get_view("0").raw)
+    else:
+        # update the screen, indicate progress
+        pygame.display.update()
+        pygame.display.set_caption(f"Rule 30 [{100 * y / STEPS:.0f}%]")
     # handle events
     pause = False
-    while True:
+    while True and not RECORDING:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or (
+                event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
+            ):
                 pygame.quit()
                 sys.exit()
             # press space to pause
