@@ -1,9 +1,13 @@
 import pygame
 import sys
 
-STEPS = 4000  # 10000
+# total number of iterations, i.e. number of frames in animation
+STEPS = 2000  # 10000
+
+# size of the screen in pixels
 SCREEN_SIZE = (1920, 1080)
-SIZE = STEPS + SCREEN_SIZE[0] // 2
+
+# Wolfram's rule 30
 RULES = {
     (1, 1, 1): 0,
     (1, 1, 0): 0,
@@ -14,39 +18,60 @@ RULES = {
     (0, 0, 1): 1,
     (0, 0, 0): 0,
 }
+
+# RGB colors for states 0 (white) and 1 (black)
 COLORS = [(255, 255, 255), (0, 0, 0)]
+
+# whether to write each frame to disk
 RECORDING = False
 
-current = [0] * SIZE
-next = [0] * SIZE
-current[SIZE // 2] = 1
-offset = [(SCREEN_SIZE[0] - SIZE) // 2, 0]
+# number of cells in the state array
+size = STEPS + SCREEN_SIZE[0] // 2
 
+# state array, initialized to all zeros
+current = [0] * size
+
+# next state, used as a temporary buffer
+next = [0] * size
+
+# initial state with a single black cell in the middle
+current[size // 2] = 1
+
+# offset of screen relative to state, allows larger state and scrolling
+offset = [(size - SCREEN_SIZE[0]) // 2, 0]
+
+# set up Pygame for drawing to screen
 pygame.init()
 pygame.display.set_caption("Rule 30")
 surface = pygame.display.set_mode(SCREEN_SIZE)
 surface.fill(COLORS[0])
 
+# progress line by line, starting at the top
 for y in range(STEPS):
+    # once we reach the bottom, start scrolling
     if y >= SCREEN_SIZE[1]:
         surface.scroll(0, -1)
-        offset[1] += 1
+        offset[1] -= 1
+    # draw the current state to the screen
     for x in range(SCREEN_SIZE[0]):
-        surface.set_at((x, y - offset[1]), COLORS[current[x - offset[0]]])
-    for x in range(SIZE):
-        if x == 0:
-            next[x] = RULES[(0, current[x], current[x + 1])]
-        elif x == SIZE - 1:
-            next[x] = RULES[(current[x - 1], current[x], 0)]
-        else:
-            next[x] = RULES[(current[x - 1], current[x], current[x + 1])]
+        surface.set_at((x, y + offset[1]), COLORS[current[x + offset[0]]])
+    # store the last accurate state, to be used by reverse.py
+    if y == size // 2 - 1:  # minus width of initial state
+        open("state.txt", "w").write("".join(str(x) for x in current))
+    # calculate the next state
+    next[0] = RULES[(0, current[0], current[1])]
+    for x in range(1, size - 1):
+        next[x] = RULES[(current[x - 1], current[x], current[x + 1])]
+    next[size - 1] = RULES[(current[size - 2], current[size - 1], 0)]
+    # apply next state by flipping buffers
     current, next = next, current
+    # update the screen, indicate progress
     pygame.display.update()
     pygame.display.set_caption(f"Rule 30 [{100 * y / STEPS:.0f}%]")
+    # write the frame to disk if recording
     if RECORDING:
         pygame.image.save(surface, f"recording/forward/{y}.png")
-    if y == SIZE // 2 - 2:
-        open("state.txt", "w").write("".join(str(x) for x in current))
+    # handle events
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
