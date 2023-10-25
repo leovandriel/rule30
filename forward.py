@@ -54,15 +54,13 @@ for y in range(STEPS):
         offset[1] -= 1
     # draw the current state to the screen
     for x in range(SCREEN_SIZE[0]):
-        surface.set_at((x, y + offset[1]), COLORS[current[x + offset[0]]])
+        surface.set_at((x, y + offset[1]), COLORS[current[(x + offset[0]) % size]])
     # store the last accurate state, to be used by reverse.py
-    if y == size // 2 - 1:  # minus width of initial state
+    if y == size // 2 - 2:  # minus width of initial state + 1
         open("state.txt", "w").write("".join(str(x) for x in current))
     # calculate the next state
-    next[0] = RULES[(0, current[0], current[1])]
-    for x in range(1, size - 1):
-        next[x] = RULES[(current[x - 1], current[x], current[x + 1])]
-    next[size - 1] = RULES[(current[size - 2], current[size - 1], 0)]
+    for x in range(0, size):
+        next[x] = RULES[(current[x - 1], current[x], current[(x + 1) % size])]
     # apply next state by flipping buffers
     current, next = next, current
     # update the screen, indicate progress
