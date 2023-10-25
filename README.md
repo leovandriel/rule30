@@ -1,11 +1,11 @@
 Rule 30
 =======
 
-*Render [Rule 30](https://en.wikipedia.org/wiki/Rule_30) forward and reversed.*
+*Animate [Rule 30](https://en.wikipedia.org/wiki/Rule_30) forward and reversed.*
 
 <img src="screen.png" width="50%" height="50%" alt="Rule 30 in reverse">
 
-[Youtube](https://www.youtube.com/watch?v=xIGPsfhxSeI)
+[YouTube](https://www.youtube.com/watch?v=xIGPsfhxSeI)
 
 ## Usage
 
